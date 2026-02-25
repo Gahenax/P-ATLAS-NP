@@ -1,0 +1,115 @@
+{
+  "schema_version": "NP-ATLAS-v0.3",
+  "campaign_id": "NPX-PROD-0.1",
+  "timestamp_created": "2026-02-25T07:57:58.596314+00:00",
+  "parameter_space": {
+    "n_variables": [
+      80,
+      100,
+      120
+    ],
+    "ratios_m_n": [
+      3.5,
+      4.0,
+      4.26,
+      4.5,
+      5.0,
+      5.5
+    ],
+    "seeds_per_point": 10,
+    "generators": [
+      "random_kcnf",
+      "planted_sat"
+    ]
+  },
+  "signature_mode": {
+    "mode": "prod_lite"
+  },
+  "signature_families": {
+    "topology": {
+      "enabled": true,
+      "graph": "bipartite_var_clause",
+      "features": [
+        "degree_mean",
+        "degree_std",
+        "degree_skew",
+        "components",
+        "largest_component_frac",
+        "projection_clustering"
+      ]
+    },
+    "spectral_lite": {
+      "enabled": true,
+      "matrix": "normalized_laplacian",
+      "k_eigs": 16,
+      "features": [
+        "lambda2",
+        "spectral_gap",
+        "spectral_entropy"
+      ]
+    },
+    "thermo": {
+      "enabled": false,
+      "temperatures": [
+        0.2,
+        0.5,
+        1.0,
+        2.0
+      ],
+      "steps": 20000,
+      "burn_in": 2000,
+      "swap_every": 50
+    },
+    "algebra": {
+      "enabled": false
+    }
+  },
+  "solver_config": {
+    "engine": "mock",
+    "timeout_seconds": 120,
+    "external": {
+      "enabled": false,
+      "binary_path": "kissat",
+      "args": [
+        "--quiet"
+      ]
+    }
+  },
+  "compression": {
+    "target_dimensions": 7,
+    "method": "corr_joint",
+    "stability_threshold": 0.85
+  },
+  "adversarial_gates": {
+    "gate_1_semantics": {
+      "enabled": true,
+      "pairs": "planted_vs_random_matched"
+    },
+    "gate_2_permutation": {
+      "enabled": true,
+      "n_permutations": 5
+    },
+    "gate_3_scale": {
+      "enabled": true,
+      "train_n": 80,
+      "test_n": 120
+    },
+    "gate_4_generator": {
+      "enabled": true,
+      "holdout_generator": "planted_sat"
+    },
+    "gate_5_perturbation": {
+      "enabled": true,
+      "perturbation_rate": 0.02
+    }
+  },
+  "atlas": {
+    "method": "knn_local_variance",
+    "k": 10,
+    "frontier_quantile": 0.8
+  },
+  "ledger": {
+    "path": "ledger.jsonl",
+    "hash_algorithm": "sha256"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "NP-ATLAS-v0.3",
+  "campaign_id": "NPX-DEMO-003",
+  "parameter_space": {
+    "n_variables": [
+      80,
+      100,
+      120
+    ],
+    "ratios_m_n": [
+      3.5,
+      4.0,
+      4.5,
+      5.0,
+      5.5
+    ],
+    "seeds_per_point": 6,
+    "k": 3
+  },
+  "solver_config": {
+    "timeout_seconds": 3600
+  },
+  "compression": {
+    "target_dimensions": 7
+  },
+  "adversarial_gates": {
+    "gate_2_permutation": {
+      "n_permutations": 5,
+      "sample_instances": 30,
+      "delta_v_threshold": 0.35
+    },
+    "gate_3_scale": {
+      "train_n": 80,
+      "test_n": 120,
+      "max_relative_drift": 0.25
+    },
+    "gate_4_generator": {
+      "max_cv": 0.6
+    },
+    "gate_5_perturbation": {
+      "perturbation_rate": 0.02,
+      "sample_instances": 30,
+      "delta_v_threshold": 0.5
+    }
+  },
+  "atlas": {
+    "knn_k": 10,
+    "frontier_quantile": 0.8
+  },
+  "ledger": {
+    "path": "ledger.jsonl"
+  }
+}

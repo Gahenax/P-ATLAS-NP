@@ -1,0 +1,42 @@
+{
+  "coordinates": [
+    "lambda2",
+    "ratio",
+    "spectral_entropy",
+    "spectral_gap",
+    "largest_component_frac",
+    "degree_skew",
+    "degree_mean"
+  ],
+  "formula": {
+    "lambda2": "zscore(lambda2)",
+    "ratio": "zscore(ratio)",
+    "spectral_entropy": "zscore(spectral_entropy)",
+    "spectral_gap": "zscore(spectral_gap)",
+    "largest_component_frac": "zscore(largest_component_frac)",
+    "degree_skew": "zscore(degree_skew)",
+    "degree_mean": "zscore(degree_mean)"
+  },
+  "stability_score": 0.905179,
+  "correlation_H": {
+    "lambda2": 0.151531,
+    "ratio": 0.196871,
+    "spectral_entropy": 0.156258,
+    "spectral_gap": 0.167545,
+    "largest_component_frac": 0.0,
+    "degree_skew": 0.150378,
+    "degree_mean": 0.16387
+  },
+  "correlation_D": {
+    "lambda2": 0.833006,
+    "ratio": 0.926689,
+    "spectral_entropy": 0.598263,
+    "spectral_gap": 0.124772,
+    "largest_component_frac": 0.0,
+    "degree_skew": 0.77484,
+    "degree_mean": 0.921664
+  },
+  "interpretation": "Espectral/estructura (Poincar\u00e9 discreto)",
+  "run_mode": "PROD",
+  "schema_version": "NP-ATLAS-v0.3"
+}

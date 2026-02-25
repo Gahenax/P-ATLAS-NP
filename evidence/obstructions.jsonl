@@ -1,0 +1,5 @@
+{"gate": "gate_1_semantics", "ts": "2026-02-25T08:01:33.852355Z", "status": "FAIL", "score": 0.006508, "details": "norm-dist planted vs random = 0.0065 (ideal ~1.0)"}
+{"gate": "gate_2_permutation", "ts": "2026-02-25T08:01:33.852355Z", "status": "PASS", "score": 1.0, "details": "worst \u0394v (perm) = 0.0000, threshold = 0.3500, samples = 30"}
+{"gate": "gate_3_scale", "ts": "2026-02-25T08:01:33.852355Z", "status": "PASS", "score": 0.915873, "details": "relative drift = 0.0210, max = 0.2500"}
+{"gate": "gate_4_generator", "ts": "2026-02-25T08:01:33.852355Z", "status": "PASS", "score": 0.999672, "details": "generator means=[2.7037171203426853, 2.7047814506657906], CV=0.0002, max=0.6000"}
+{"gate": "gate_5_perturbation", "ts": "2026-02-25T08:01:33.852355Z", "status": "FAIL", "score": 0.0, "details": "worst \u0394v (pert rate=0.02) = 1.8356, threshold = 0.5000, samples=30"}
