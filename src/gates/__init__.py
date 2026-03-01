@@ -1,0 +1,1 @@
+from .adversarial import AdversarialGates, apply_variable_permutation, apply_clause_perturbation
