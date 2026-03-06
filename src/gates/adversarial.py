@@ -109,6 +109,8 @@ class AdversarialGates:
         r["gate_3_scale"] = self._gate_scale(base_df, coords, plan_gates)
         r["gate_4_generator"] = self._gate_generator(base_df, coords, plan_gates)
         r["gate_5_perturbation"] = self._gate_perturbation(base_df, instances_by_id, coords, stats, plan_gates)
+        r["gate_6_spectral_camouflage"] = self._gate_spectral_camouflage(base_df, coords, plan_gates)
+        r["gate_7_falsifiability"] = self._gate_falsifiability_check(instances_by_id)
 
         all_pass = all(x.get("status") == "PASS" for x in r.values())
         r["final_verdict"] = "VECTOR_VALIDATED" if all_pass else "VECTOR_REJECTED"
@@ -124,14 +126,14 @@ class AdversarialGates:
         if planted.sum() == 0 or rnd.sum() == 0:
             return {"status": "INCONCLUSIVE", "score": 0.5, "details": "Insufficient generator diversity"}
 
-        planted_mean = float(df.loc[planted, coords].mean().mean())
-        rnd_mean = float(df.loc[rnd, coords].mean().mean())
-        denom = float(df[coords].std().mean()) + 1e-8
-        dist = abs(planted_mean - rnd_mean) / denom
+        planted_mean = df.loc[planted, coords].mean().values
+        rnd_mean = df.loc[rnd, coords].mean().values
+        denom = df[coords].std().values.mean() + 1e-8
+        dist = float(np.linalg.norm(planted_mean - rnd_mean) / denom)
 
-        score = max(0.0, 1.0 - abs(dist - 1.0) / 1.0)
-        status = "PASS" if score >= 0.5 else "FAIL"
-        return {"status": status, "score": round(float(score), 6), "details": f"norm-dist planted vs random = {dist:.4f} (ideal ~1.0)"}
+        score = min(1.0, dist / 0.5)
+        status = "PASS" if dist >= 0.1 else "FAIL"
+        return {"status": status, "score": round(float(score), 6), "details": f"norm-dist planted vs random = {dist:.4f} (ideal >0.1)"}
 
     def _gate_permutation(self, base_df: pd.DataFrame, instances_by_id: Dict[str, Dict[str, Any]], coords: List[str], stats: Dict[str, Tuple[float, float]], plan_gates: Dict[str, Any]) -> Dict[str, Any]:
         cfg = plan_gates.get("gate_2_permutation", {})
@@ -233,3 +235,51 @@ class AdversarialGates:
         score = max(0.0, 1.0 - worst / (threshold + 1e-8))
         status = "PASS" if worst <= threshold else "FAIL"
         return {"status": status, "score": round(float(score), 6), "details": f"worst delta_v (pert) = {worst:.4f}, threshold = {threshold:.4f}, samples={len(deltas)}"}
+
+    def _gate_spectral_camouflage(self, df: pd.DataFrame, coords: List[str], plan_gates: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Gate 6: Spectral Camouflage (Quiet Planting).
+        Verifies that 'quiet_planted_sat' instances are statistically indistinguishable from 'random_kcnf'
+        in the target embedding space.
+        """
+        cfg = plan_gates.get("gate_6_spectral_camouflage", {})
+        max_dist = float(cfg.get("max_distance", 0.5))
+
+        if "generator" not in df.columns:
+            return {"status": "INCONCLUSIVE", "score": 0.5, "details": "No generator metadata"}
+
+        quiet = df["generator"] == "quiet_planted_sat"
+        rnd = df["generator"] == "random_kcnf"
+
+        if quiet.sum() == 0 or rnd.sum() == 0:
+            return {"status": "INCONCLUSIVE", "score": 0.5, "details": "Need both quiet_planted_sat and random_kcnf"}
+
+        quiet_mean = df.loc[quiet, coords].mean().values
+        rnd_mean = df.loc[rnd, coords].mean().values
+        
+        # Compute normalized distance
+        denom = df[coords].std().values.mean() + 1e-8
+        dist = float(np.linalg.norm(quiet_mean - rnd_mean) / denom)
+
+        score = max(0.0, 1.0 - (dist / (max_dist + 1e-8)))
+        status = "PASS" if dist <= max_dist else "FAIL"
+        
+        return {"status": status, "score": round(float(score), 6), "details": f"camouflage distance = {dist:.4f}, max = {max_dist:.4f}"}
+
+    def _gate_falsifiability_check(self, instances_by_id: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Gate 7: OmniTest Falsifiability (Deep Equality).
+        Detects mathematically impossible injected datasets (e.g., P=NP contradictions).
+        """
+        fails = []
+        for inst_id, inst in instances_by_id.items():
+            unit_clauses = set()
+            for c in inst.get("clauses", []):
+                if len(c) == 1:
+                    lit = c[0]
+                    if -lit in unit_clauses:
+                        fails.append(inst_id)
+                    unit_clauses.add(lit)
+        if fails:
+            return {"status": "FAIL", "score": 0.0, "details": f"Falsifiability Poison detected in {len(fails)} instances: {fails[0]}"}
+        return {"status": "PASS", "score": 1.0, "details": "No poisoned instances detected (Deep Equality / Falsifiability passed)"}

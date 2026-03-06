@@ -1,2 +1,2 @@
 from .generators import SATGenerator
-from .solvers import MockSolver
+from .solvers import MockSolver, RealSolver

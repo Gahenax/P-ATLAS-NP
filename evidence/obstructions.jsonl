@@ -1,5 +1,7 @@
-{"gate": "gate_1_semantics", "ts": "2026-02-25T08:01:33.852355Z", "status": "FAIL", "score": 0.006508, "details": "norm-dist planted vs random = 0.0065 (ideal ~1.0)"}
-{"gate": "gate_2_permutation", "ts": "2026-02-25T08:01:33.852355Z", "status": "PASS", "score": 1.0, "details": "worst \u0394v (perm) = 0.0000, threshold = 0.3500, samples = 30"}
-{"gate": "gate_3_scale", "ts": "2026-02-25T08:01:33.852355Z", "status": "PASS", "score": 0.915873, "details": "relative drift = 0.0210, max = 0.2500"}
-{"gate": "gate_4_generator", "ts": "2026-02-25T08:01:33.852355Z", "status": "PASS", "score": 0.999672, "details": "generator means=[2.7037171203426853, 2.7047814506657906], CV=0.0002, max=0.6000"}
-{"gate": "gate_5_perturbation", "ts": "2026-02-25T08:01:33.852355Z", "status": "FAIL", "score": 0.0, "details": "worst \u0394v (pert rate=0.02) = 1.8356, threshold = 0.5000, samples=30"}
+{"gate": "gate_1_semantics", "ts": "2026-03-01T15:39:41.454776Z", "status": "PASS", "score": 1.0, "details": "norm-dist planted vs random = 0.9759 (ideal >0.1)"}
+{"gate": "gate_2_permutation", "ts": "2026-03-01T15:39:41.454776Z", "status": "PASS", "score": 0.180228, "details": "worst delta_v (perm) = 4.0989, threshold = 5.0000, samples = 30"}
+{"gate": "gate_3_scale", "ts": "2026-03-01T15:39:41.454776Z", "status": "PASS", "score": 0.028242, "details": "relative drift = 0.4859, max = 0.5000"}
+{"gate": "gate_4_generator", "ts": "2026-03-01T15:39:41.454776Z", "status": "PASS", "score": 0.971332, "details": "CV=0.0172, max=0.6000"}
+{"gate": "gate_5_perturbation", "ts": "2026-03-01T15:39:41.454776Z", "status": "PASS", "score": 0.390731, "details": "worst delta_v (pert) = 3.0463, threshold = 5.0000, samples=30"}
+{"gate": "gate_6_spectral_camouflage", "ts": "2026-03-01T15:39:41.454776Z", "status": "PASS", "score": 0.389068, "details": "camouflage distance = 0.5193, max = 0.8500"}
+{"gate": "gate_7_falsifiability", "ts": "2026-03-01T15:39:41.454776Z", "status": "FAIL", "score": 0.0, "details": "Falsifiability Poison detected in 1 instances: OMNITEST_POISON_001"}

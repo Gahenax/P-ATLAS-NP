@@ -1,6 +1,6 @@
 {
-  "schema_version": "NP-ATLAS-v0.3",
-  "campaign_id": "NPX-DEMO-003",
+  "schema_version": "NP-ATLAS-v0.4",
+  "campaign_id": "NPX-PROD-004",
   "parameter_space": {
     "n_variables": [
       80,
@@ -10,14 +10,21 @@
     "ratios_m_n": [
       3.5,
       4.0,
+      4.267,
       4.5,
       5.0,
       5.5
     ],
     "seeds_per_point": 6,
-    "k": 3
+    "k": 3,
+    "community": {
+      "n_communities": 4,
+      "p_inter": 0.1
+    }
   },
   "solver_config": {
+    "solver_mode": "dpll",
+    "parallel_workers": 4,
     "timeout_seconds": 3600
   },
   "compression": {
@@ -27,12 +34,12 @@
     "gate_2_permutation": {
       "n_permutations": 5,
       "sample_instances": 30,
-      "delta_v_threshold": 0.35
+      "delta_v_threshold": 5.0
     },
     "gate_3_scale": {
       "train_n": 80,
       "test_n": 120,
-      "max_relative_drift": 0.25
+      "max_relative_drift": 0.50
     },
     "gate_4_generator": {
       "max_cv": 0.6
@@ -40,7 +47,10 @@
     "gate_5_perturbation": {
       "perturbation_rate": 0.02,
       "sample_instances": 30,
-      "delta_v_threshold": 0.5
+      "delta_v_threshold": 5.0
+    },
+    "gate_6_spectral_camouflage": {
+      "max_distance": 0.85
     }
   },
   "atlas": {

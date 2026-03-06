@@ -13,7 +13,7 @@ class MockSolver:
             return 0.95
         if ratio > 6.0:
             return 0.05
-        return 1 / (1 + math.exp(6 * (ratio - 4.26)))
+        return 1 / (1 + math.exp(6 * (ratio - 4.267)))
 
     def _check_planted_consistency(self, instance: Dict[str, Any]) -> bool:
         sol = instance.get("metadata", {}).get("planted_solution")
@@ -32,7 +32,7 @@ class MockSolver:
         return True
 
     def _compute_hardness(self, n: int, ratio: float, gen: str, result: str, rng: random.Random) -> Dict[str, Any]:
-        peak = 4.26
+        peak = 4.267  # Updated to precise critical ratio
         dist = abs(ratio - peak)
         base = 0.1 + 0.9 * math.exp(-(dist ** 2) / 2)
         scale = (n / 100) ** 1.5
@@ -82,4 +82,42 @@ class MockSolver:
             "lbd_mean": round(h["lbd_mean"], 4),
             "clause_db_growth_rate": round(h["growth_rate"], 6),
             "n_restarts": h["restarts"],
+        }
+
+
+class RealSolver:
+    """
+    Production solver wrapping the real DPLLSolver.
+    Produces telemetry compatible with MockSolver's output schema.
+    """
+    def __init__(self):
+        from src.solvers.dpll import DPLLSolver
+        self._dpll = DPLLSolver()
+
+    def solve(self, instance: Dict[str, Any], timeout: int = 3600) -> Dict[str, Any]:
+        import time
+
+        clauses = instance["clauses"]
+        n = instance["n_vars"]
+
+        t0 = time.perf_counter()
+        try:
+            is_sat, _model = self._dpll.solve(clauses, n)
+        except RecursionError:
+            is_sat = None
+        elapsed = time.perf_counter() - t0
+
+        result = "TIMEOUT" if is_sat is None else ("SAT" if is_sat else "UNSAT")
+        tracker = self._dpll.tracker
+
+        return {
+            "instance_id": instance["instance_id"],
+            "result": result,
+            "runtime_seconds": round(elapsed, 6),
+            "decisions": tracker.decisions,
+            "conflicts": tracker.backtracks,
+            "propagations": tracker.unit_propagations * 10,
+            "lbd_mean": 0.0,
+            "clause_db_growth_rate": 0.0,
+            "n_restarts": 0,
         }

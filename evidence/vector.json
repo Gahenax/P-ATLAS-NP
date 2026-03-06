@@ -1,42 +1,42 @@
 {
   "coordinates": [
-    "lambda2",
+    "algebra_unit_prop_fixations",
+    "thermo_log_Z_slope",
     "ratio",
-    "spectral_entropy",
-    "spectral_gap",
-    "largest_component_frac",
-    "degree_skew",
-    "degree_mean"
+    "spectral_entropy_proxy",
+    "spectral_gap_proxy",
+    "incidence_rank_proxy",
+    "resistance_to_2sat"
   ],
   "formula": {
-    "lambda2": "zscore(lambda2)",
+    "algebra_unit_prop_fixations": "zscore(algebra_unit_prop_fixations)",
+    "thermo_log_Z_slope": "zscore(thermo_log_Z_slope)",
     "ratio": "zscore(ratio)",
-    "spectral_entropy": "zscore(spectral_entropy)",
-    "spectral_gap": "zscore(spectral_gap)",
-    "largest_component_frac": "zscore(largest_component_frac)",
-    "degree_skew": "zscore(degree_skew)",
-    "degree_mean": "zscore(degree_mean)"
+    "spectral_entropy_proxy": "zscore(spectral_entropy_proxy)",
+    "spectral_gap_proxy": "zscore(spectral_gap_proxy)",
+    "incidence_rank_proxy": "zscore(incidence_rank_proxy)",
+    "resistance_to_2sat": "zscore(resistance_to_2sat)"
   },
-  "stability_score": 0.905179,
+  "stability_score": 0.854534,
   "correlation_H": {
-    "lambda2": 0.151531,
-    "ratio": 0.196871,
-    "spectral_entropy": 0.156258,
-    "spectral_gap": 0.167545,
-    "largest_component_frac": 0.0,
-    "degree_skew": 0.150378,
-    "degree_mean": 0.16387
+    "algebra_unit_prop_fixations": 0.08888,
+    "thermo_log_Z_slope": 0.239695,
+    "ratio": 0.214638,
+    "spectral_entropy_proxy": 0.197643,
+    "spectral_gap_proxy": 0.192669,
+    "incidence_rank_proxy": 0.350519,
+    "resistance_to_2sat": 0.078622
   },
   "correlation_D": {
-    "lambda2": 0.833006,
-    "ratio": 0.926689,
-    "spectral_entropy": 0.598263,
-    "spectral_gap": 0.124772,
-    "largest_component_frac": 0.0,
-    "degree_skew": 0.77484,
-    "degree_mean": 0.921664
+    "algebra_unit_prop_fixations": 0.247627,
+    "thermo_log_Z_slope": 0.732664,
+    "ratio": 0.932313,
+    "spectral_entropy_proxy": 0.930053,
+    "spectral_gap_proxy": 0.928905,
+    "incidence_rank_proxy": 0.099221,
+    "resistance_to_2sat": 0.197244
   },
-  "interpretation": "Espectral/estructura (Poincar\u00e9 discreto)",
-  "run_mode": "PROD",
+  "interpretation": "Espectral/estructura (Poincar\u00e9 discreto) | Termodin\u00e1mica (paisaje energ\u00e9tico) | \u00c1lgebra/simplificaci\u00f3n (normalizaci\u00f3n)",
+  "run_mode": "DEMO",
   "schema_version": "NP-ATLAS-v0.3"
 }
