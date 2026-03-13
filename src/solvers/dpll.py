@@ -1,13 +1,20 @@
+from typing import Dict
+
+MAX_RECURSION_DEPTH = 5000  # Guard against stack overflow on large instances
+
+
 class DPLLTracker:
     def __init__(self):
         self.backtracks = 0
         self.unit_propagations = 0
         self.decisions = 0
+        self.depth_cutoffs = 0
 
     def reset(self):
         self.backtracks = 0
         self.unit_propagations = 0
         self.decisions = 0
+        self.depth_cutoffs = 0
 
 
 class DPLLSolver:
@@ -37,12 +44,8 @@ class DPLLSolver:
                 model: A dictionary mapping variables to boolean values if SAT, else None.
         """
         self.tracker.reset()
-        
-        # We start with empty assignment
-        # Note: DPLL uses a functional/recursive approach here with persistent-style copying
         assignment = {}
-        
-        result, final_assignment = self._dpll(cnf_formula, assignment)
+        result, final_assignment = self._dpll(cnf_formula, assignment, depth=0)
         return result, final_assignment
 
     def _simplify(self, formula, unit_literal):
@@ -65,14 +68,19 @@ class DPLLSolver:
                new_formula.append(clause)
         return new_formula
 
-    def _dpll(self, formula, assignment):
+    def _dpll(self, formula, assignment, depth: int = 0):
         """
         Recursive core of the DPLL algorithm.
         """
+        # Depth limit guard against stack overflow on large instances
+        if depth >= MAX_RECURSION_DEPTH:
+            self.tracker.depth_cutoffs += 1
+            return False, None
+
         # Base cases
         if not formula:
             return True, assignment
-        
+
         # Check for empty clauses (UNSAT context)
         for clause in formula:
             if not clause:
@@ -105,30 +113,42 @@ class DPLLSolver:
         # In hard random 3-SAT, pure literals are rare during the core search phase.
         
         # 3. Decision (Branching)
-        # Choose an unassigned variable (simple heuristic: first variable in the first clause)
+        # Choose the variable that appears most frequently (MOM-like heuristic).
+        # Falls back to first literal if formula is trivially small.
         self.tracker.decisions += 1
-        decision_literal = formula[0][0]
+        decision_literal = self._choose_literal(formula)
         var = abs(decision_literal)
-        
+
         # Branch True (try the literal as given)
         new_assignment = assignment.copy()
         new_assignment[var] = decision_literal > 0
         new_formula = self._simplify(formula, decision_literal)
-        
+
         if new_formula is not None:
-            res, final_assn = self._dpll(new_formula, new_assignment)
+            res, final_assn = self._dpll(new_formula, new_assignment, depth + 1)
             if res:
                 return True, final_assn
         else:
-             self.tracker.backtracks += 1
+            self.tracker.backtracks += 1
 
         # Branch False (try the negation of the literal)
         new_assignment = assignment.copy()
         new_assignment[var] = decision_literal < 0
         new_formula = self._simplify(formula, -decision_literal)
-        
+
         if new_formula is not None:
-             return self._dpll(new_formula, new_assignment)
+            return self._dpll(new_formula, new_assignment, depth + 1)
         else:
-             self.tracker.backtracks += 1
-             return False, None
+            self.tracker.backtracks += 1
+            return False, None
+
+    def _choose_literal(self, formula) -> int:
+        """
+        Most-Occurring literal heuristic: pick the literal that appears most
+        frequently across all clauses. Better than always picking first literal.
+        """
+        freq: Dict[int, int] = {}
+        for clause in formula:
+            for lit in clause:
+                freq[lit] = freq.get(lit, 0) + 1
+        return max(freq, key=freq.__getitem__)

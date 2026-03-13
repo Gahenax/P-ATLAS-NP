@@ -213,6 +213,8 @@ class AdversarialGates:
         rate = float(cfg.get("perturbation_rate", 0.02))
         threshold = float(cfg.get("delta_v_threshold", 0.50))
         sample_n = int(cfg.get("sample_instances", 30))
+        # Multiple perturbations per instance: take worst-case delta (mirrors Gate 2 design)
+        n_perts = int(cfg.get("n_perturbations", 5))
 
         ids = list(instances_by_id.keys())
         ids = [i for i in ids if "|perm:" not in i and "|pert:" not in i]
@@ -224,17 +226,21 @@ class AdversarialGates:
             base_feat, _ = self.extractor.extract_all(inst)
             base_v = compute_v_vector(base_feat, coords, stats)
 
-            pert_seed = _u32_from_sha256(inst_id + "|pertseed")
-            inst_q = apply_clause_perturbation(inst, rate=rate, pert_seed=pert_seed)
-            feat_q, _ = self.extractor.extract_all(inst_q)
-            v_q = compute_v_vector(feat_q, coords, stats)
-            dv = float(np.linalg.norm(base_v - v_q))
-            deltas.append(dv)
+            worst_for_inst = 0.0
+            for j in range(n_perts):
+                pert_seed = _u32_from_sha256(inst_id + f"|pertseed:{j}")
+                inst_q = apply_clause_perturbation(inst, rate=rate, pert_seed=pert_seed)
+                feat_q, _ = self.extractor.extract_all(inst_q)
+                v_q = compute_v_vector(feat_q, coords, stats)
+                dv = float(np.linalg.norm(base_v - v_q))
+                if dv > worst_for_inst:
+                    worst_for_inst = dv
+            deltas.append(worst_for_inst)
 
         worst = float(np.max(deltas)) if deltas else 999.0
         score = max(0.0, 1.0 - worst / (threshold + 1e-8))
         status = "PASS" if worst <= threshold else "FAIL"
-        return {"status": status, "score": round(float(score), 6), "details": f"worst delta_v (pert) = {worst:.4f}, threshold = {threshold:.4f}, samples={len(deltas)}"}
+        return {"status": status, "score": round(float(score), 6), "details": f"worst delta_v (pert) = {worst:.4f}, threshold = {threshold:.4f}, samples={len(deltas)}, n_perts={n_perts}"}
 
     def _gate_spectral_camouflage(self, df: pd.DataFrame, coords: List[str], plan_gates: Dict[str, Any]) -> Dict[str, Any]:
         """

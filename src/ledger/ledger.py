@@ -1,5 +1,8 @@
 import json
 import hashlib
+import fcntl
+import tempfile
+import os
 from pathlib import Path
 from typing import Dict, Any, Tuple, List
 from src.utils import now_z
@@ -33,8 +36,31 @@ class Ledger:
         self_hash = hashlib.sha256(event_str.encode("utf-8")).hexdigest()
         event["self_hash"] = self_hash
 
-        with open(self.path, "a", encoding="utf-8") as f:
-            f.write(json.dumps(event) + "\n")
+        # Atomic append: write to temp file then fsync + rename to prevent corruption
+        line = json.dumps(event) + "\n"
+        tmp_fd, tmp_path = tempfile.mkstemp(
+            dir=self.path.parent, prefix=".ledger_tmp_", suffix=".jsonl"
+        )
+        try:
+            with os.fdopen(tmp_fd, "w", encoding="utf-8") as tmp_f:
+                tmp_f.write(line)
+                tmp_f.flush()
+                os.fsync(tmp_f.fileno())
+
+            # File-lock the ledger for the append operation
+            with open(self.path, "a", encoding="utf-8") as f:
+                fcntl.flock(f, fcntl.LOCK_EX)
+                try:
+                    f.write(line)
+                    f.flush()
+                    os.fsync(f.fileno())
+                finally:
+                    fcntl.flock(f, fcntl.LOCK_UN)
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
 
         self.prev_hash = self_hash
         return self_hash

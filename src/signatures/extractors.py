@@ -99,24 +99,34 @@ class SignatureExtractor:
         spec_cfg = self.families.get("spectral_lite", {})
         if spec_cfg.get("enabled", False):
             try:
-                import scipy.linalg as la
-                L_dense = nx.normalized_laplacian_matrix(B).toarray()
-                eigs = la.eigvalsh(L_dense)
-                eigs = np.sort(np.abs(eigs))
+                # Use sparse solver: only compute k smallest eigenvalues → O(N·k) not O(N³)
+                import scipy.sparse.linalg as spla_eig
+                L_sparse = nx.normalized_laplacian_matrix(B)
+                n_nodes = L_sparse.shape[0]
+                k_eigs = min(8, n_nodes - 2)  # need at least 2 for gap
+                if k_eigs >= 2:
+                    eigs = spla_eig.eigsh(
+                        L_sparse, k=k_eigs, which="SM", return_eigenvectors=False
+                    )
+                    eigs = np.sort(np.abs(eigs))
+                else:
+                    eigs = np.zeros(2)
             except Exception:
                 eigs = np.zeros(2)
 
-            lambda2 = eigs[1] if len(eigs) > 1 else 0.0
-            gap = eigs[2] - eigs[1] if len(eigs) > 2 else 0.0
+            lambda2 = float(eigs[1]) if len(eigs) > 1 else 0.0
+            gap = float(eigs[2] - eigs[1]) if len(eigs) > 2 else 0.0
 
-            p = eigs / (np.sum(eigs) + 1e-12)
+            # Spectral entropy over eigenvalue distribution (normalized)
+            total = float(np.sum(eigs)) + 1e-12
+            p = eigs / total
             p = p[p > 0]
-            entropy = -np.sum(p * np.log(p))
+            entropy = float(-np.sum(p * np.log(p)))
 
             features.update({
-                "lambda2": float(lambda2),
-                "spectral_gap": float(gap),
-                "spectral_entropy": float(entropy)
+                "lambda2": lambda2,
+                "spectral_gap": gap,
+                "spectral_entropy": entropy,
             })
 
         if "algebra" in self.families and self.families["algebra"].get("enabled", False):

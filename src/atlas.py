@@ -1,13 +1,33 @@
 import numpy as np
 from typing import List, Dict, Any
 
+try:
+    from scipy.spatial import KDTree as _KDTree
+    _HAVE_SCIPY = True
+except ImportError:
+    _HAVE_SCIPY = False
+
+
 def knn_indices(vmat: np.ndarray, k: int) -> List[List[int]]:
     """
-    kNN por distancia euclídea O(N^2) (evita dependencia sklearn).
-    Para N moderado (demo) está bien.
+    kNN via scipy KDTree O(N log N). Falls back to O(N²) brute-force
+    if scipy is unavailable.
     """
     n = vmat.shape[0]
-    out: List[List[int]] = []
+    k_query = min(k + 1, n)  # +1 because query includes self
+
+    if _HAVE_SCIPY and n > 50:
+        tree = _KDTree(vmat)
+        # query returns (distances, indices); first neighbor is self
+        _, all_idx = tree.query(vmat, k=k_query)
+        out: List[List[int]] = []
+        for i in range(n):
+            neighbors = [int(j) for j in all_idx[i] if int(j) != i][:k]
+            out.append(neighbors)
+        return out
+
+    # Brute-force fallback for small N or missing scipy
+    out = []
     for i in range(n):
         d = np.sum((vmat - vmat[i]) ** 2, axis=1)
         idx = np.argsort(d)

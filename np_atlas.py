@@ -49,8 +49,13 @@ def _solve_one(instance: Dict[str, Any], timeout: int, solver_mode: str) -> Dict
 
 class NPAtlasDriver:
     def __init__(self, plan_path: str):
-        with open(plan_path, "r", encoding="utf-8") as f:
-            self.plan = json.load(f)
+        try:
+            with open(plan_path, "r", encoding="utf-8") as f:
+                self.plan = json.load(f)
+        except FileNotFoundError:
+            raise SystemExit(f"[ERROR] Plan file not found: {plan_path}")
+        except json.JSONDecodeError as e:
+            raise SystemExit(f"[ERROR] Malformed plan.json at {plan_path}: {e}")
 
         self.ps = self.plan.get("parameter_space", {})
         self.sc = self.plan.get("solver_config", {})
@@ -215,7 +220,6 @@ class NPAtlasDriver:
 
     def _solve_parallel(self, instances: List[Dict[str, Any]], timeout: int) -> List[Dict[str, Any]]:
         """Solve instances in parallel using ProcessPoolExecutor."""
-        from src.core.solvers import MockSolver, RealSolver
         solver_mode = self.sc.get("solver_mode", "mock")
 
         results: Dict[str, Dict[str, Any]] = {}
@@ -226,8 +230,20 @@ class NPAtlasDriver:
                 future_map[future] = inst["instance_id"]
 
             done_count = 0
+            future_timeout = timeout + 30  # grace period beyond per-instance timeout
             for future in as_completed(future_map):
-                tel = future.result()
+                inst_id = future_map[future]
+                try:
+                    tel = future.result(timeout=future_timeout)
+                except Exception as exc:
+                    print(f"  [WARN] instance {inst_id} failed in worker: {exc}")
+                    tel = {
+                        "instance_id": inst_id,
+                        "result": "ERROR",
+                        "runtime_seconds": float(timeout),
+                        "decisions": 0,
+                        "conflicts": 0,
+                    }
                 results[tel["instance_id"]] = tel
                 done_count += 1
                 if done_count % 50 == 0:
@@ -375,7 +391,8 @@ class NPAtlasDriver:
         print("=" * 72)
         print(f"verdict: {gates.get('final_verdict')}")
         passed = sum(1 for k, x in gates.items() if isinstance(x, dict) and x.get("status") == "PASS")
-        print(f"gates passed: {passed}/5")
+        total_gates = sum(1 for k in gates if k.startswith("gate_"))
+        print(f"gates passed: {passed}/{total_gates}")
         print(f"run_mode: {gates.get('run_mode')}")
         print("=" * 72)
 
@@ -471,6 +488,7 @@ def ensure_default_plan(path: str) -> None:
             },
             "gate_5_perturbation": {
                 "perturbation_rate": 0.02,
+                "n_perturbations": 5,
                 "sample_instances": 30,
                 "delta_v_threshold": 0.50
             },
