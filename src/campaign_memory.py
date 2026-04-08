@@ -4,7 +4,7 @@ Tracks explored parameter regions across campaigns to enable incremental explora
 """
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Set, Tuple
 
 
@@ -45,12 +45,12 @@ class CampaignMemory:
                                gates: Dict[str, Any], n_instances: int,
                                explored_keys: Set[str]) -> None:
         """Append campaign to daily log and update MEMORY.md."""
-        today = datetime.utcnow().strftime("%Y-%m-%d")
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         daily_log = self.memory_dir / f"{today}.md"
 
         # Append to daily log
         entry = f"\n### Campaign: {campaign_id}\n"
-        entry += f"- **Timestamp**: {datetime.utcnow().isoformat()}Z\n"
+        entry += f"- **Timestamp**: {datetime.now(timezone.utc).isoformat()}Z\n"
         entry += f"- **Instances**: {n_instances}\n"
         entry += f"- **Verdict**: {gates.get('final_verdict', 'UNKNOWN')}\n"
         entry += f"- **Vector dims**: {len(v.get('coordinates', []))}\n"
@@ -72,7 +72,7 @@ class CampaignMemory:
         """Rewrite MEMORY.md with accumulated knowledge."""
         lines = []
         lines.append("# NP-ATLAS Campaign Memory\n\n")
-        lines.append(f"> Last updated: {datetime.utcnow().isoformat()}Z\n\n")
+        lines.append(f"> Last updated: {datetime.now(timezone.utc).isoformat()}Z\n\n")
 
         # Best vector so far
         lines.append("## Best Vector\n\n")
