@@ -1,6 +1,6 @@
 import hashlib
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 
 def _u32_from_sha256(s: str) -> int:
     h = hashlib.sha256(s.encode("utf-8")).hexdigest()
@@ -11,4 +11,4 @@ def rng_for_instance(instance_id: str, salt: str = "") -> random.Random:
     return random.Random(seed)
 
 def now_z() -> str:
-    return datetime.utcnow().isoformat() + "Z"
+    return datetime.now(timezone.utc).isoformat() + "Z"
