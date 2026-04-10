@@ -105,7 +105,7 @@ class AdversarialGates:
 
         r = {}
         r["gate_1_semantics"] = self._gate_semantics(base_df, coords)
-        r["gate_2_permutation"] = self._gate_permutation(base_df, instances_by_id, coords, stats, plan_gates)
+        r["gate_2_permutation"] = self._gate_permutation(instances_by_id, coords, stats, plan_gates)
         r["gate_3_scale"] = self._gate_scale(base_df, coords, plan_gates)
         r["gate_4_generator"] = self._gate_generator(base_df, coords, plan_gates)
         r["gate_5_perturbation"] = self._gate_perturbation(base_df, instances_by_id, coords, stats, plan_gates)
@@ -135,7 +135,7 @@ class AdversarialGates:
         status = "PASS" if dist >= 0.1 else "FAIL"
         return {"status": status, "score": round(float(score), 6), "details": f"norm-dist planted vs random = {dist:.4f} (ideal >0.1)"}
 
-    def _gate_permutation(self, base_df: pd.DataFrame, instances_by_id: Dict[str, Dict[str, Any]], coords: List[str], stats: Dict[str, Tuple[float, float]], plan_gates: Dict[str, Any]) -> Dict[str, Any]:
+    def _gate_permutation(self, instances_by_id: Dict[str, Dict[str, Any]], coords: List[str], stats: Dict[str, Tuple[float, float]], plan_gates: Dict[str, Any]) -> Dict[str, Any]:
         cfg = plan_gates.get("gate_2_permutation", {})
         n_perms = int(cfg.get("n_permutations", 5))
         threshold = float(cfg.get("delta_v_threshold", 0.35))
