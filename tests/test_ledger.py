@@ -35,3 +35,20 @@ def test_ledger_chain_validity():
         import os
         if os.path.exists(path):
             os.remove(path)
+
+def test_ledger_invalid_json():
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix=".jsonl") as f:
+        path = f.name
+        f.write('{"event_type": "START", "self_hash": "abc"}\n')
+        f.write('{"this is": invalid json}\n')
+        f.write('{"event_type": "END", "self_hash": "def"}\n')
+
+    try:
+        ledger = Ledger(path=path)
+        valid, msg = ledger.validate_chain()
+        assert valid is False
+        assert "Line 2: Invalid JSON" in msg
+    finally:
+        import os
+        if os.path.exists(path):
+            os.remove(path)
