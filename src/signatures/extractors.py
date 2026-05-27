@@ -1,7 +1,7 @@
 import math
 import statistics
 import numpy as np
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any, Tuple
 from src.utils import rng_for_instance
 
 class SignatureExtractor:
