@@ -1,4 +1,4 @@
-import random
+import secrets
 import math
 
 # Critical phase-transition ratio for 3-SAT (Mezard et al, 2002)
@@ -20,12 +20,13 @@ def generate_random_k_sat(num_vars, num_clauses, k=3):
     Returns:
         List of lists representing the CNF formula.
     """
+    rng = secrets.SystemRandom()
     formula = []
     variables = list(range(1, num_vars + 1))
 
     for _ in range(num_clauses):
-        clause_vars = random.sample(variables, k)
-        clause = [var if random.random() < 0.5 else -var for var in clause_vars]
+        clause_vars = rng.sample(variables, k)
+        clause = [var if rng.random() < 0.5 else -var for var in clause_vars]
         formula.append(clause)
 
     return formula
@@ -50,6 +51,7 @@ def generate_planted_k_sat(num_vars, k=3, alpha=None):
         tuple: (formula: List[List[int]], planted_solution: List[int])
                The planted_solution is the hidden satisfying assignment.
     """
+    rng = secrets.SystemRandom()
     if alpha is None:
         if k == 3:
             alpha = CRITICAL_ALPHA_3SAT
@@ -68,7 +70,7 @@ def generate_planted_k_sat(num_vars, k=3, alpha=None):
     # Step 1: Plant a hidden solution (Quiet Planting)
     # Assign each variable a truth value with uniform probability
     planted_solution = [
-        var if random.random() < 0.5 else -var
+        var if rng.random() < 0.5 else -var
         for var in variables
     ]
     planted_map = {abs(lit): (lit > 0) for lit in planted_solution}
@@ -79,10 +81,10 @@ def generate_planted_k_sat(num_vars, k=3, alpha=None):
     # spectral echoes (the literal polarity distribution must stay near 50/50).
     formula = []
     for _ in range(num_clauses):
-        clause_vars = random.sample(variables, k)
+        clause_vars = rng.sample(variables, k)
 
         # Initially assign random polarity (uniform)
-        clause = [var if random.random() < 0.5 else -var for var in clause_vars]
+        clause = [var if rng.random() < 0.5 else -var for var in clause_vars]
 
         # Check if planted solution already satisfies at least one literal
         is_satisfied = any(
@@ -95,7 +97,7 @@ def generate_planted_k_sat(num_vars, k=3, alpha=None):
         if not is_satisfied:
             # Pick the literal whose variable appears least in the formula so far
             # (minimizes frequency anomalies = Spectral Camouflage)
-            flip_idx = random.randint(0, int(k) - 1)
+            flip_idx = rng.randint(0, int(k) - 1)
             var: int = int(abs(clause[flip_idx]))
             clause[flip_idx] = var if planted_map[var] else -var
 
