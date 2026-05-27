@@ -1,0 +1,25 @@
+[tool.ruff]
+# Configure Ruff to be lenient with legacy mathematical code styles
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = [
+    "E701", # Multiple statements on one line
+    "E722", # Bare except
+    "F401", # Unused import
+    "F841", # Local variable is assigned to but never used
+    "F541", # f-string without placeholders
+    "E402", # Module level import not at top of file (needed for sys.path manipulation)
+    "E712", # Avoid equality comparisons to True/False
+    "E741", # Ambiguous variable name
+    "E501", # Line too long
+    "W291", # Trailing whitespace
+    "W293", # Blank line contains whitespace
+    "E702", # Multiple statements on one line (semicolon)
+    "E731", # Do not assign lambda expression
+    "F811", # Redefinition of unused name
+    "F821", # Undefined name
+    "E401"  # Multiple imports on one line
+]

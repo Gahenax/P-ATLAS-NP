@@ -12,7 +12,7 @@ def test_random_kcnf_determinism():
 
 def test_planted_sat():
     gen = SATGenerator()
-    inst = gen.planted_sat(10, 42, 3, seed=42)
+    inst = gen.quiet_planted_sat(10, 42, 3, seed=42)
     
     assert "planted_solution" in inst["metadata"]
     assert len(inst["clauses"]) == 42
